@@ -7,16 +7,17 @@ public class SecretWordController {
     private ArrayList<String> secretWords = new ArrayList<>();
 
     private void insertWords() {
-        secretWords.add("germany");
-        secretWords.add("nightshade");
-        secretWords.add("rudimentary");
-        secretWords.add("cultural");
-        secretWords.add("scientology");
-        secretWords.add("banana");
-        secretWords.add("horse");
-        secretWords.add("jesus");
-        secretWords.add("orange");
-        secretWords.add("ketchup");
+        secretWords.add("HEJ");
+        secretWords.add("GERMANY");
+        secretWords.add("NIGHTSHADE");
+        secretWords.add("RUDIMENTARY");
+        secretWords.add("CULTURAL");
+        secretWords.add("SCIENTOLOGY");
+        secretWords.add("BANANA");
+        secretWords.add("HORSE");
+        secretWords.add("JESUS");
+        secretWords.add("ORANGE");
+        secretWords.add("KETCHUP");
         //TODO: seperate into word types, and tell user which category
     }
 

@@ -5,25 +5,15 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class GameController {
-
-    Character answer;
     SecretWordController secretWordController = new SecretWordController();
-    String secretWord = secretWordController.toString();;
-    Scanner scanner = new Scanner(System.in);
-    String scanned;
+    String secretWord = secretWordController.toString();
     ArrayList<Character> guesses = new ArrayList<>();
-    String guessesString = "";
-    int guessAmount;
 
-    public void scan(String input){
-        guessAmount++;
-        scanned = input;
-        if(scanned.length() == 1){
-            if(!guesses.contains(scanned.charAt(0))){
-                guesses.add(scanned.charAt(0));
-                guessesString = guessesString + scanned.charAt(0) + ", ";
-            }
-        }
+    int correctGuessAmount;
+    String tmpDots;
+
+    public void scan(char input){
+        guesses.add(input);
     }
 
 
@@ -36,19 +26,26 @@ public class GameController {
                 chars.add(guesses.get(i));
             }
         }
+
         for(int i = 0; i < secretWord.length(); i++) {
 
             if (chars.contains(secretWord.charAt(i))) {
                 dots = dots + secretWord.charAt(i);
+
                 }
             else{
                 dots = dots + "*";
                 }
         }
+
+        if(!dots.equals(tmpDots)){
+            correctGuessAmount++;
+        }
+        tmpDots = dots;
         return dots;
     }
     public boolean haveWon(){
-        if(scanned.equals(secretWord)){
+        if(!printDots().contains("*")){
             return true;
         }
         else{

@@ -15,15 +15,18 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
 
+import java.util.ArrayList;
 import java.util.concurrent.LinkedBlockingDeque;
 
 public class GUI extends Application {
 
     GameController gameController = new GameController();
-    int wordLength = gameController.secretWord.length();
-    TextField txfInput;
-    Label lblPrompt, lblDots, lblUsed;
-    Button btnInput;
+    SecretWordController secretWordController = new SecretWordController();
+    Label lblPrompt, lblDots, lblInfo;
+    VBox vbxBottom;
+    Button[] btnArray = new Button[26];
+    HBox hbxAlphabet1, hbxAlphabet2, hbxAlphabet3, hbxPlayAgain;
+    Button btnPlayAgain;
 
     @Override
     public void start(Stage stage){
@@ -34,6 +37,8 @@ public class GUI extends Application {
         stage.show();
         pane.setPadding(new Insets(50, 50, 50, 50));
         initGUI(pane);
+        initGUIAlphabet();
+        lblDots.requestFocus();
     }
 
     private void initGUI(BorderPane pane){
@@ -45,15 +50,15 @@ public class GUI extends Application {
         vbxTop.getChildren().add(lblTest);
         lblTest.setFont(Font.font("", FontWeight.BOLD, 30));
 
-        Label lblInfo = new Label();
-        lblInfo.setText("Welcome to word guesser!\nThe length of your word is: " + wordLength + "\n");
+        lblInfo = new Label();
+        lblInfo.setText("Welcome to word guesser!\nThe length of your word is: " + gameController.secretWord.length() + "\n");
         vbxTop.getChildren().add(lblInfo);
 
         //CENTER
         VBox vbxCenter = new VBox();
         pane.setCenter(vbxCenter);
         vbxCenter.setAlignment(Pos.CENTER);
-        lblPrompt = new Label("Enter your guess (One letter, or a full word): ");
+        lblPrompt = new Label("");
         vbxCenter.getChildren().add(lblPrompt);
         lblPrompt.setAlignment(Pos.BOTTOM_CENTER);
         Label lblBlank = new Label();
@@ -61,53 +66,90 @@ public class GUI extends Application {
         lblDots = new Label();
         vbxCenter.getChildren().add(lblDots);
         String dots = new String();
-        for (int i = 0; i < wordLength; i++){
+        for (int i = 0; i < gameController.secretWord.length(); i++){
             dots = dots+"*";
         }
         lblDots.setText(dots);
         lblDots.setFont(Font.font("", FontWeight.BOLD, 20));
 
         //BOTTOM
-        VBox vbxBottom = new VBox();
+        vbxBottom = new VBox();
         pane.setBottom(vbxBottom);
 
-        HBox hbxInput = new HBox();
-        vbxBottom.getChildren().add(hbxInput);
-        hbxInput.setAlignment(Pos.BOTTOM_CENTER);
-        txfInput = new TextField();
-        hbxInput.getChildren().add(txfInput);
-        txfInput.setAlignment(Pos.BOTTOM_CENTER);
-        txfInput.setOnKeyPressed(event -> {if(event.getCode() == KeyCode.ENTER){btnInputAction();}});
+        hbxPlayAgain = new HBox();
+        hbxPlayAgain.setAlignment(Pos.BOTTOM_RIGHT);
+        btnPlayAgain = new Button("Play Again");
+        btnPlayAgain.setAlignment(Pos.BOTTOM_RIGHT);
+        btnPlayAgain.setOnAction(event -> playAgainAction());
+        hbxPlayAgain.getChildren().add(btnPlayAgain);
 
-        btnInput = new Button("OK");
-        hbxInput.getChildren().add(btnInput);
-        btnInput.setOnAction(event -> btnInputAction());
-
-        lblUsed = new Label();
-        vbxBottom.getChildren().add(lblUsed);
     }
 
-    private void btnInputAction(){
+    private void initGUIAlphabet(){
+        hbxAlphabet1 = new HBox();
+        hbxAlphabet2 = new HBox();
+        hbxAlphabet3 = new HBox();
+        vbxBottom.getChildren().add(hbxAlphabet1);
+        vbxBottom.getChildren().add(hbxAlphabet2);
+        vbxBottom.getChildren().add(hbxAlphabet3);
+        char cha;
+        int count = 0;
+        for(cha = 'A'; cha <= 'Z'; ++cha){
+            btnArray[count] = new Button(String.valueOf(cha));
+            char finalCha = cha;
+            int finalCount = count;
+            btnArray[count].setOnAction(event -> btnInputAction(finalCha, finalCount));
+            btnArray[count].setMinSize(30, 30);
+            count++;
+    }
+        for(int i = 0; i < 10; i++){
 
-        gameController.scan(txfInput.getText());
+            hbxAlphabet1.getChildren().add(btnArray[i]);
+        }
+        for(int j = 10; j < 20; j++){
+            hbxAlphabet2.getChildren().add(btnArray[j]);
+        }
+        for(int k = 20; k < 26; k++){
+            hbxAlphabet3.getChildren().add(btnArray[k]);
+        }
+    }
+
+    private void btnInputAction(char letter, int btnIndex){
+        lblDots.requestFocus();
+        gameController.scan(letter);
         lblDots.setText(gameController.printDots());
-        txfInput.clear();
+        btnArray[btnIndex].setDisable(true);
 
         if(gameController.haveWon()){
-            lblPrompt.setText("YOU WIN THE GAME\n         (" + gameController.guessAmount + " Guesses)");
+            lblPrompt.setText("YOU WIN THE GAME\n  (" + (gameController.guesses.size() - gameController.correctGuessAmount) + " Wrong Guesses)");
             lblPrompt.setTextFill(Color.GREEN);
             lblPrompt.setFont(Font.font("", FontWeight.BOLD, 20));
-            btnInput.setDisable(true);
-            txfInput.setDisable(true);
             lblDots.setText(gameController.secretWord);
-
+            vbxBottom.getChildren().add(hbxPlayAgain);
+            disableButtons(true);
         }
         else{
-            //gameController.updateGuessString();
-            lblUsed.setText(gameController.guessesString);
             gameController.printDots();
-
         }
+    }
+
+    private void disableButtons(boolean disabled){
+        for(Button btn : btnArray){
+            btn.setDisable(disabled);
+        }
+
+    }
+
+    private void playAgainAction(){
+        disableButtons(false);
+        vbxBottom.getChildren().remove(hbxPlayAgain);
+        lblPrompt.setText("");
+        gameController.guesses.clear();
+        gameController.correctGuessAmount = 0;
+        gameController.secretWord = secretWordController.toString();
+        gameController.tmpDots = "";
+        lblDots.setText(gameController.printDots());
+        lblInfo.setText("Welcome to word guesser!\nThe length of your word is: " + gameController.secretWord.length() + "\n");
 
     }
 }
